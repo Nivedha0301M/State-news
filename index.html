@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Bank Exam Quiz</title>
+
+<style>
+
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f6f9;
+    margin:0;
+    padding:20px;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+}
+
+h1{
+    text-align:center;
+}
+
+/* ========================= */
+/* TIMER AREA */
+/* ========================= */
+
+#timer-container{
+    position:sticky;
+    top:0;
+    z-index:100;
+    background:#f4f6f9;
+    padding-bottom:10px;
+}
+
+#timer{
+    background:#222;
+    color:white;
+    padding:15px;
+    text-align:center;
+    font-size:22px;
+    border-radius:10px;
+    margin-bottom:10px;
+}
+
+.timer-buttons{
+    text-align:center;
+}
+
+#pauseBtn,
+#resumeBtn{
+    padding:10px 20px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+    margin:5px;
+}
+
+#pauseBtn{
+    background:#ff9800;
+    color:white;
+}
+
+#resumeBtn{
+    background:#28a745;
+    color:white;
+}
+
+.question{
+    background:white;
+    padding:20px;
+    margin-bottom:20px;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+.question h3{
+    margin-bottom:15px;
+}
+
+.option{
+    display:block;
+    padding:12px;
+    margin:10px 0;
+    border:1px solid #ccc;
+    border-radius:8px;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.option:hover{
+    background:#f0f0f0;
+}
+
+.selected{
+    background:#cfe2ff;
+    border:2px solid #0d6efd;
+}
+
+.mark-btn{
+    margin-top:10px;
+    padding:8px 15px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    background:#ff9800;
+    color:white;
+}
+
+.marked{
+    background:#ffcc80 !important;
+}
+
+.review-marked{
+    background:#e0e0e0 !important;
+    border:2px solid #9e9e9e;
+}
+
+.clear-btn{
+    margin-top:10px;
+    margin-left:10px;
+    padding:8px 15px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    background:#dc3545;
+    color:white;
+}
+
+.submit-btn{
+    width:100%;
+    padding:15px;
+    font-size:20px;
+    border:none;
+    border-radius:10px;
+    background:#28a745;
+    color:white;
+    cursor:pointer;
+    margin-top:20px;
+}
+
+.result-box{
+    background:white;
+    padding:30px;
+    border-radius:12px;
+    text-align:center;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+.review-btn{
+    padding:12px 20px;
+    margin-top:20px;
+    border:none;
+    border-radius:10px;
+    background:#007bff;
+    color:white;
+    font-size:18px;
+    cursor:pointer;
+}
+
+.review-question{
+    background:white;
+    padding:20px;
+    margin:20px 0;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+.correct{
+    color:green;
+    font-weight:bold;
+}
+
+.wrong{
+    color:red;
+    font-weight:bold;
+}
+
+.unanswered{
+    color:orange;
+    font-weight:bold;
+}
+
+.correct-answer{
+    background:#d4edda;
+    padding:10px;
+    border-radius:8px;
+    margin-top:10px;
+}
+
+.disabled-option{
+    pointer-events:none;
+    opacity:0.6;
+}
+
+.disabled-btn{
+    opacity:0.6;
+    cursor:not-allowed;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Bank Exam MCQ Quiz</h1>
+
+<!-- ========================= -->
+<!-- TIMER -->
+<!-- ========================= -->
+
+<div id="timer-container">
+
+    <div id="timer">
+        Time Left: 20:00
+    </div>
+
+    <div class="timer-buttons">
+
+        <button id="pauseBtn" onclick="pauseTimer()">
+            Pause
+        </button>
+
+        <button id="resumeBtn" onclick="resumeTimer()" disabled>
+            Resume
+        </button>
+
+    </div>
+
+</div>
+
+<div id="quiz"></div>
+
+<button class="submit-btn" onclick="submitQuiz()">
+Submit Quiz
+</button>
+
+</div>
+
+<script>
+
+// ===============================
+// QUESTIONS AREA
+// ===============================
+
+const questions = [
+
+{q:"The Government of Andhra Pradesh under Chief Minister N. Chandrababu Naidu launched a ₹150 crore free electricity scheme aimed at supporting handloom and powerloom weavers. Under this initiative, handloom weavers are entitled to free electricity up to:", options:["150 units per month","200 units per month","250 units per month","300 units per month"], answer:1},
+
+{q:"Apart from free electricity, the Andhra Pradesh Government announced several welfare measures for weavers, including a monthly pension amounting to:", options:["₹2,500","₹3,000","₹4,000","₹5,000"], answer:2},
+
+{q:"The ₹5 crore thrift fund announced by Andhra Pradesh for handloom cooperatives is primarily intended to promote:", options:["Export incentives","Savings and credit support among members","Cotton procurement subsidies","Technology incubation centres"], answer:1},
+
+{q:"The Andhra Pradesh free electricity scheme grants powerloom weavers free electricity up to:", options:["300 units per month","400 units per month","500 units per month","600 units per month"], answer:2},
+
+{q:"Which state became the third Indian state after Maharashtra and Gujarat to sign a Letter of Intent (LoI) with Starlink India to enhance digital connectivity in remote regions?", options:["Assam","Meghalaya","Sikkim","Arunachal Pradesh"], answer:1},
+
+{q:"Starlink India, with which Meghalaya signed an LoI for improving internet connectivity, is a satellite internet network originally developed by a company headquartered in:", options:["Palo Alto, California","Austin, Texas","Redmond, Washington","Seattle, Washington"], answer:2},
+
+{q:"The Government of Telangana declared which disease as a 'Notifiable Disease' to strengthen surveillance and establish a centralised registry for non-communicable diseases?", options:["Tuberculosis","Diabetes Mellitus","Cancer","Chronic Kidney Disease"], answer:2},
+
+{q:"Which institute has been designated as the nodal institution for the centralised cancer registry initiative in Telangana?", options:["Basavatarakam Indo-American Cancer Hospital","Tata Memorial Centre, Mumbai","Mehdi Nawaz Jung Institute of Oncology and Regional Cancer Centre","Nizam's Institute of Medical Sciences"], answer:2},
+
+{q:"For AI-enabled lung cancer screening, the Government of Telangana signed an agreement with:", options:["Roche Pharmaceuticals","Pfizer Inc.","AstraZeneca","Novartis AG"], answer:2},
+
+{q:"At which polling station was the humanoid robot 'Nila' deployed for the first time to welcome voters during elections in Puducherry?", options:["Petit Seminaire School Booth","VOC Government School Polling Booth","Tagore Government School Booth","Bharathidasan Government School Booth"], answer:1},
+
+{q:"The humanoid robot 'Nila', dressed in a traditional saree and assisting voters, was developed by:", options:["Asimov Robotics, Kerala","Genrobotics Innovations","Robo Mirror, Coimbatore","Addverb Technologies"], answer:2},
+
+{q:"The deployment of 'Nila' by Puducherry election authorities mainly aimed at creating a:", options:["Paperless polling system","Blockchain voting environment","High-tech and voter-friendly atmosphere","Facial-recognition-based election process"], answer:2},
+
+{q:"Telangana's Artificial Intelligence innovation hub 'Aikam' signed an MoU with which Australian university to promote applied AI research and skilling?", options:["University of Melbourne","Monash University","Deakin University","Australian National University"], answer:2},
+
+{q:"The Memorandum of Understanding between AI Hub Aikam and Deakin University was signed by Professor Iain Martin and:", options:["Jayesh Ranjan","Phani Nagarjuna","Sanjay Kumar Jain","D. Sridhar Babu"], answer:1},
+
+{q:"AI Hub Aikam, which recently entered into an agreement with Deakin University, was established in:", options:["2023","2024","2025","2026"], answer:2},
+
+{q:"Deakin University, which collaborated with Telangana's AI Hub Aikam, was established in:", options:["1968","1974","1982","1988"], answer:1},
+
+{q:"Vietnam's largest private conglomerate Vingroup signed an MoU with the Government of Maharashtra to explore investments amounting to:", options:["USD 4.5 billion","USD 5.2 billion","USD 6.5 billion","USD 8 billion"], answer:2},
+
+{q:"The investment pact between Vingroup and Maharashtra is aligned with the state's ambition of becoming a:", options:["USD 750 billion economy","USD 900 billion economy","USD 1 trillion economy","USD 1.5 trillion economy"], answer:2},
+
+{q:"Under the Vingroup-Maharashtra agreement, integrated smart township projects are proposed over an area of approximately:", options:["500 hectares","750 hectares","1,000 hectares","1,500 hectares"], answer:2},
+
+{q:"As part of the electric mobility component under the Maharashtra-Vingroup agreement, Green and Smart Mobility (GSM) plans to deploy nearly:", options:["25,000 electric vehicles","40,000 electric vehicles","60,000 electric vehicles","1 lakh electric vehicles"], answer:2},
+
+{q:"The Andhra Pradesh State Disaster Management Authority (APSDMA) signed an MoU with which ISRO centre to strengthen lightning forecasting and early warning systems?", options:["Vikram Sarabhai Space Centre (VSSC)","Space Applications Centre (SAC)","National Remote Sensing Centre (NRSC)","U R Rao Satellite Centre (URSC)"], answer:2},
+
+{q:"The MoU between APSDMA and National Remote Sensing Centre (NRSC) was signed by Prakhar Jain and:", options:["Dr. P. Senthil Kumar","Dr. Aparna","Dr. K. Sivan","Dr. Mylswamy Annadurai"], answer:1},
+
+{q:"National Remote Sensing Centre (NRSC), associated with Andhra Pradesh's lightning forecasting initiative, was established in:", options:["1969","1972","1974","1978"], answer:2},
+
+{q:"Which state became the first in India to adopt Marine Spatial Planning (MSP) in the second phase under the Indo-Norway Integrated Ocean Management initiative?", options:["Kerala","Gujarat","Odisha","Andhra Pradesh"], answer:2},
+
+{q:"The Government of Odisha signed an MoU on Marine Spatial Planning with:", options:["National Institute of Ocean Technology (NIOT)","National Centre for Coastal Research (NCCR)","Indian National Centre for Ocean Information Services (INCOIS)","Central Marine Fisheries Research Institute (CMFRI)"], answer:1},
+
+{q:"The India-Norway collaboration on sustainable ocean planning, under which Odisha adopted Marine Spatial Planning, was launched in:", options:["2015","2017","2019","2021"], answer:2},
+
+{q:"National Centre for Coastal Research (NCCR), which partnered with Odisha, was established in:", options:["1995","1998","2001","2005"], answer:1},
+
+{q:"Maharashtra's AI Policy 2026 aims to attract investments worth:", options:["₹7,500 crore by 2030","₹10,000 crore by 2031","₹15,000 crore by 2035","₹20,000 crore by 2031"], answer:1},
+
+{q:"According to Maharashtra AI Policy 2026, employment opportunities expected to be generated by 2031 are approximately:", options:["1 lakh jobs","1.25 lakh jobs","1.5 lakh jobs","2 lakh jobs"], answer:2},
+
+{q:"The AI Venture Fund proposed under Maharashtra AI Policy 2026 has a corpus of:", options:["₹250 crore","₹400 crore","₹500 crore","₹750 crore"], answer:2},
+
+{q:"Under Maharashtra AI Policy 2026, the state plans to establish how many AI Innovation Cities?", options:["Three","Four","Five","Seven"], answer:2},
+
+{q:"How many Centres of Excellence (CoEs) have been proposed under Maharashtra AI Policy 2026?", options:["Four","Five","Six","Eight"], answer:2},
+
+{q:"The AI Policy 2026 of Maharashtra provides what percentage subsidy to MSMEs for AI adoption?", options:["10%","15%","20%","25%"], answer:2},
+
+{q:"The Rajasthan State Industrial Development and Investment Corporation (RIICO) earmarked ₹1,500 crore during FY 2026-27 mainly for:", options:["Renewable energy projects","Tourism development","Upgradation of industrial infrastructure","Metro rail expansion"], answer:2},
+
+{q:"RIICO currently manages approximately how many industrial areas across Rajasthan?", options:["376","412","446","500"], answer:2},
+
+{q:"How many new industrial areas were added by RIICO during FY26?", options:["15","18","21","25"], answer:2},
+
+{q:"RIICO has allocated ₹25 crore for strengthening fire and safety infrastructure, including the establishment of:", options:["8 fire stations and 25 fire tenders","10 fire stations and 30 fire tenders","12 fire stations and 37 fire tenders","15 fire stations and 40 fire tenders"], answer:2},
+
+{q:"The proposed Mega Zinc Park in Bhilwara, spread across 111 acres, is being developed with the support of:", options:["Hindalco Industries Limited","Vedanta Aluminium Limited","Hindustan Zinc Limited","National Aluminium Company Limited"], answer:2},
+
+{q:"Rajasthan State Industrial Development and Investment Corporation (RIICO), responsible for industrial infrastructure development in the state, was established in:", options:["1965","1967","1969","1972"], answer:2},
+
+{q:"Hindustan Zinc Limited, associated with the proposed Mega Zinc Park in Bhilwara, was founded in:", options:["1956","1962","1966","1970"], answer:2},
+
+{q:"Bengaluru Police introduced India's first AI-powered multilingual emergency response system under 'Namma 112'. What is the name of the Voice AI technology deployed for this initiative?", options:["Sahayak","VANKI (Voice AI for Nationwide Key Interventions)","Sarathi","Bhashini"], answer:1},
+
+{q:"The AI-powered multilingual emergency system launched by Bengaluru Police under Namma 112 primarily aims to:", options:["Replace emergency operators with robots","Facilitate digital payments during emergencies","Ensure faster emergency response and eliminate language barriers for tourists and migrants","Monitor cybercrime complaints only"], answer:2},
+
+{q:"The VANKI (Voice AI for Nationwide Key Interventions) system launched by Bengaluru Police supports communication in:", options:["5 Indian languages only","8 regional languages only","More than 10 Indian and foreign languages","22 scheduled Indian languages only"], answer:2},
+
+{q:"Which of the following is NOT a feature of Bengaluru Police's AI-powered multilingual emergency system under Namma 112?", options:["Real-time language interpretation","Automatic emergency request generation","Facial recognition-based criminal identification","Support for multiple Indian and foreign languages"], answer:2},
+
+{q:"Which state became the first in India to implement a fully paperless judiciary system with e-filing, virtual hearings and digital case records?", options:["Goa","Sikkim","Himachal Pradesh","Uttarakhand"], answer:1},
+
+{q:"The paperless judiciary initiative implemented by Sikkim includes which of the following facilities?", options:["Blockchain voting system","Digital case records and virtual hearings","AI-generated judgments","Online jury system"], answer:1},
+
+{q:"Which among the following is NOT cited as a benefit of Sikkim's paperless judiciary initiative?", options:["Faster justice delivery","Better access for remote areas","Improved transparency","Elimination of district courts"], answer:3},
+
+{q:"Sikkim attained statehood on:", options:["16 May 1975","26 January 1975","1 April 1974","15 August 1975"], answer:0},
+
+{q:"The High Court of Sikkim is located at:", options:["Namchi","Gangtok","Gyalshing","Mangan"], answer:1},
+
+{q:"Chief Minister N. Chandrababu Naidu reviewed logistics integration plans to connect economic regions in Andhra Pradesh. Which corridor forms a major component of this strategy?", options:["Delhi-Mumbai Industrial Corridor","Chennai-Bengaluru Industrial Corridor","East Coast Industrial Corridor","Amritsar-Kolkata Industrial Corridor"], answer:2},
+
+{q:"Under Andhra Pradesh's logistics integration plans, Product Perfection Clusters are proposed in:", options:["Vijayawada, Kurnool and Nellore","Visakhapatnam, Amaravati and Tirupati","Rajahmundry, Anantapur and Kadapa","Guntur, Nellore and Srikakulam"], answer:1},
+
+{q:"The Rare Earth Mineral Park proposed by Andhra Pradesh is planned for:", options:["2025-26","2026-27","2027-28","2028-29"], answer:1},
+
+{q:"How many MSME parks have been proposed under Andhra Pradesh's logistics and industrial development plans?", options:["100","125","150","175"], answer:3},
+
+{q:"Farmer Producer Organisations (FPOs), proposed to be integrated within industrial clusters in Andhra Pradesh, are promoted by:", options:["Ministry of Commerce and Industry","Ministry of Rural Development","Ministry of Agriculture","Ministry of MSME"], answer:2},
+
+{q:"The Karnataka Government approved sustainable data parks in which three cities?", options:["Bengaluru, Hubballi and Belagavi","Bengaluru, Mysuru and Mangaluru","Mysuru, Shivamogga and Tumakuru","Bengaluru, Kalaburagi and Davanagere"], answer:1},
+
+{q:"The combined power capacity planned under Karnataka's sustainable data park initiative is:", options:["500 MW","750 MW","1,000 MW","1,500 MW"], answer:2},
+
+{q:"The proposed Bengaluru data park alone will have a capacity of:", options:["250 MW","400 MW","500 MW","600 MW"], answer:2},
+
+{q:"Solar power for Karnataka's sustainable data parks will be supplied from:", options:["Bhadla Solar Park","Rewa Solar Park","Pavagada Solar Park","Charanka Solar Park"], answer:2},
+
+{q:"The Karnataka Government plans to supply how much treated water for the proposed data parks?", options:["40 MLD","50 MLD","60 MLD","80 MLD"], answer:2},
+
+{q:"Approximately how many acres have been identified in Mangaluru for establishing data infrastructure?", options:["200 acres","250 acres","300 acres","350 acres"], answer:3},
+
+{q:"The Andhra Pradesh Government launched 'Startup Kadapa' with the objective of promoting innovation. The proposed startup hub will cover:", options:["20,000 sq ft","25,000 sq ft","30,000 sq ft","40,000 sq ft"], answer:2},
+
+{q:"The Startup Kadapa initiative aims to accommodate more than how many professionals?", options:["200","300","400","500"], answer:2},
+
+{q:"The investment planned for establishing the Startup Kadapa hub is:", options:["₹8 crore","₹10 crore","₹12 crore","₹15 crore"], answer:2},
+
+{q:"Under Startup Kadapa, projected investments over the next five years are estimated at:", options:["₹250 crore","₹350 crore","₹500 crore","₹750 crore"], answer:2},
+
+{q:"Startup Kadapa operates under which model?", options:["PPP Model","P3 Model","P4 Model","Hub-and-Spoke Model"], answer:2},
+
+{q:"The Startup Kadapa initiative is linked with which innovation hub?", options:["T-Hub Hyderabad","Ratan Tata Innovation Hub","NASSCOM Startup Hub","Atal Innovation Hub"], answer:1},
+
+{q:"Nagaland launched the '100 Days Ayushman Student Coverage Mission' to expand health insurance coverage among students under:", options:["PM Jan Dhan Yojana","PM Jeevan Jyoti Bima Yojana","Ayushman Bharat-Pradhan Mantri Jan Arogya Yojana (AB-PMJAY)","PM Suraksha Bima Yojana"], answer:2},
+
+{q:"The '100 Days Ayushman Student Coverage Mission' is regarded as the first student-centric health saturation drive in:", options:["Eastern India","North-Eastern Region","Southern India","Himalayan Region"], answer:1},
+
+{q:"Ayushman Bharat-Pradhan Mantri Jan Arogya Yojana (AB-PMJAY) was launched in:", options:["2016","2017","2018","2019"], answer:2},
+
+{q:"The Bihar Cabinet approved a USD 500 million loan from which international financial institution for the Bihar Urban Transformation Programme?", options:["Asian Development Bank","New Development Bank","International Monetary Fund","World Bank"], answer:3},
+
+{q:"The loan approved by Bihar for strengthening urban centres amounts to approximately:", options:["₹3,950 crore","₹4,250 crore","₹4,750 crore","₹5,500 crore"], answer:2},
+
+{q:"The World Bank (WB), which approved the loan for Bihar, was established in:", options:["1944","1945","1947","1950"], answer:0},
+
+{q:"Punjab Chief Minister Bhagwant Mann launched 'Meri Rasoi Yojana' to provide free food kits to nearly:", options:["20 lakh families","30 lakh families","40 lakh families","50 lakh families"], answer:2},
+
+{q:"'Meri Rasoi Yojana' is implemented under which Act?", options:["Essential Commodities Act, 1955","National Food Security Act (NFSA), 2013","Food Safety and Standards Act, 2006","Public Distribution System Act, 2010"], answer:1},
+
+{q:"Under Punjab's 'Meri Rasoi Yojana', food kits are distributed:", options:["Every month","Once every two months","Once every three months","Twice a year"], answer:2},
+
+{q:"Which state launched India's first integrated technology-driven portal to monitor Not of Standard Quality (NSQ) medicines and regulate Narcotic Drugs and Psychotropic Substances (NDPS) drugs?", options:["Telangana","Kerala","Karnataka","Gujarat"], answer:2},
+
+{q:"The integrated portal for monitoring NSQ medicines and NDPS drug sales was developed by:", options:["Central Drugs Standard Control Organisation (CDSCO)","Food Safety and Drug Administration (FDA) Department","National Health Authority (NHA)","Indian Council of Medical Research (ICMR)"], answer:1},
+
+{q:"Madhya Pradesh partnered with Google to develop an AI-powered framework for managing which religious congregation scheduled in 2028?", options:["Maha Pushkaram","Simhastha 2028","Chhath Mahaparv","Ganga Sagar Mela"], answer:1},
+
+{q:"Simhastha, for which Madhya Pradesh partnered with Google, is organised at:", options:["Prayagraj","Nashik","Ujjain","Haridwar"], answer:2},
+
+{q:"Google introduced which AI assistant under its collaboration with the Government of Madhya Pradesh for Simhastha 2028?", options:["Mitra","Sahayak","Saarthi","Setu"], answer:1},
+
+{q:"The Government of Maharashtra signed Memorandums of Understanding (MoUs) with NTPC Limited, Adani Power Limited (APL), Reliance Industries Limited (RIL), and Lalitpur Power Generation Company Limited (LPGCL) for nuclear energy projects. The total proposed investment under these agreements amounts to:", options:["₹4.5 lakh crore","₹5.2 lakh crore","₹6.5 lakh crore","₹7.8 lakh crore"], answer:2},
+
+{q:"The nuclear energy projects proposed through MoUs signed by Maharashtra with four companies are expected to create a total generation capacity of:", options:["18,500 MW","21,000 MW","25,400 MW","30,000 MW"], answer:2},
+
+{q:"Which company has committed an investment of ₹2 lakh crore under Maharashtra's nuclear energy expansion initiative?", options:["NTPC Limited","Adani Power Limited (APL)","Reliance Industries Limited (RIL)","Power Grid Corporation of India Limited"], answer:2},
+
+{q:"Under the nuclear energy agreements signed in Mumbai, Adani Power Limited (APL) has proposed investments worth:", options:["₹1 lakh crore","₹1.25 lakh crore","₹1.5 lakh crore","₹2 lakh crore"], answer:2},
+
+{q:"Lalitpur Power Generation Company Limited (LPGCL), one of the partners in Maharashtra's nuclear energy initiative, plans to invest:", options:["₹1 lakh crore","₹1.5 lakh crore","₹1.75 lakh crore","₹2 lakh crore"], answer:3},
+
+{q:"Which Haryana minister launched the 'ShramMitra' mobile application aimed at connecting daily wage workers with employers?", options:["Nayab Singh Saini","Anil Vij","Krishan Kumar Bedi","Mahipal Dhanda"], answer:1},
+
+{q:"The 'ShramMitra' application was developed by which organization?", options:["Haryana Skill Development Mission","Haryana Labour Department","Haryana Building and Other Construction Workers Welfare Board","National Skill Development Corporation (NSDC)"], answer:2},
+
+{q:"The 'ShramMitra' app seeks to replace the traditional system of:", options:["Industrial training centres","Labour chowks","Employment exchanges","Gram Panchayat offices"], answer:1},
+
+{q:"Approximately how many registered workers are included in the database of the ShramMitra application?", options:["50,000","60,000","75,000","1 lakh"], answer:2},
+
+{q:"The ShramMitra app launched by Haryana covers nearly how many labour chowks across the state?", options:["100","120","135","150"], answer:2},
+
+{q:"Which of the following technologies is incorporated into Haryana's ShramMitra app for location-based worker accessibility?", options:["Blockchain mapping","Geo-mapping technology","Facial recognition system","RFID tagging"], answer:1},
+
+{q:"Construction of Karnataka's new international cricket stadium, expected to become India's second-largest after Narendra Modi Stadium, has been launched near Bengaluru at:", options:["Devanahalli","Whitefield","Suryanagar Phase-4, Anekal Taluk","Yelahanka"], answer:2},
+
+{q:"The proposed international cricket stadium in Karnataka will have a seating capacity of approximately:", options:["60,000 spectators","70,000 spectators","80,000 spectators","1 lakh spectators"], answer:2},
+
+{q:"The estimated project cost of Karnataka's new international cricket stadium is close to:", options:["₹650 crore","₹800 crore","₹943–950 crore","₹1,200 crore"], answer:2},
+
+{q:"Spread across nearly 75 acres, Karnataka's international cricket stadium is expected to be completed by:", options:["2027","2028","2029","2030"], answer:2},
+
+{q:"Which stadium currently holds the distinction of being the largest cricket stadium in India?", options:["Eden Gardens","Wankhede Stadium","Narendra Modi Stadium","Greenfield Stadium"], answer:2},
+
+{q:"The Central Bank Digital Currency (CBDC)-based Public Distribution System (PDS) announced by the Delhi Government will use India's digital currency known as:", options:["e₹ (Digital Rupee)","Bharat Coin","DigiCash India","RuPay Digital Token"], answer:0},
+
+{q:"Under Delhi's CBDC-based ration distribution system, subsidy value will be credited to beneficiaries through:", options:["UPI Lite accounts","CBDC wallets linked with Aadhaar and bank accounts","RuPay cards only","DigiLocker accounts"], answer:1},
+
+{q:"The Delhi Government has raised the annual income eligibility limit for ration beneficiaries from ₹1.2 lakh to:", options:["₹1.8 lakh","₹2 lakh","₹2.5 lakh","₹3 lakh"], answer:2},
+
+{q:"Around how many fake or duplicate ration cards were cancelled by the Delhi Government while introducing reforms in the Public Distribution System?", options:["1 lakh","1.5 lakh","2 lakh","3 lakh"], answer:2},
+
+{q:"Kerala's first private medical museum, known as the Museum of Medical Archives, was founded by:", options:["M. S. Valiathan","A. Sivaraman","G. Madhavan Nair","K. Kasturirangan"], answer:1},
+
+{q:"The Museum of Medical Archives, Kerala's first private medical museum, is situated in:", options:["Kochi","Kozhikode","Ulloor, Thiruvananthapuram","Kollam"], answer:2},
+
+{q:"The ₹236 crore Queen Pineapple Mission launched in Tripura comes under the Ministry of Development of North Eastern Region (MDoNER). The implementation roadmap extends from:", options:["FY2025 to FY2027","Q2 FY2026 to Q4 FY2028","FY2026 to FY2030","Q1 FY2027 to Q4 FY2029"], answer:1},
+
+{q:"Which Union Minister launched the Queen Pineapple Mission aimed at promoting cultivation, processing and export of GI-tagged Queen Pineapple?", options:["Piyush Goyal","Sarbananda Sonowal","Jyotiraditya M. Scindia","Kiren Rijiju"], answer:2},
+
+{q:"Under the Queen Pineapple Mission, the Hub-and-Spoke post-harvest ecosystem will include one central hub near:", options:["Maharaja Bir Bikram Airport","Agartala Airport","Lengpui Airport","Imphal International Airport"], answer:1},
+
+{q:"The revival of the Nalkata Pineapple Processing Unit under the Queen Pineapple Mission will be undertaken through a VGF model by:", options:["APEDA","TRIFED","NERAMAC","NABARD"], answer:2},
+
+{q:"The Andhra Pradesh Government plans to create an Angel Fund under the Ratan Tata Innovation Hub (RTIH) in collaboration with:", options:["NABARD","SIDBI","EXIM Bank","IFCI Limited"], answer:1},
+
+{q:"The proposed Angel Fund in Andhra Pradesh is intended to support startups working in AI, Deep-Tech, Quantum Technologies, Electronics and:", options:["Defence Manufacturing","Textile Technology","Advanced Manufacturing","FinTech Solutions only"], answer:2},
+
+{q:"Small Industries Development Bank of India (SIDBI), collaborating with Andhra Pradesh under the Angel Fund initiative, was established in:", options:["1982","1985","1990","1992"], answer:2},
+
+{q:"The Delhi e-Governance Society (DeGS) signed an MoU with which bank for integrating the e-Pay platform with the government's e-Procurement Portal?", options:["Punjab National Bank","Bank of Baroda","State Bank of India","Canara Bank"], answer:2},
+
+{q:"One of the important features of the SBI e-Pay platform integrated with Delhi's e-Procurement Portal is:", options:["Offline verification of tenders","Real-time EMD verification","Cryptocurrency settlement","NFC-enabled procurement system"], answer:1},
+
+{q:"State Bank of India (SBI), which partnered with Delhi e-Governance Society, was established in:", options:["1949","1955","1960","1969"], answer:1},
+
+{q:"The Uttar Pradesh Cabinet approved amendments to the Uttar Pradesh Semiconductor Policy-2024 to align incentives with which national initiative?", options:["Make in India Programme","Digital India Mission","India Semiconductor Mission","National Electronics Policy"], answer:2},
+
+{q:"According to the amended Uttar Pradesh Semiconductor Policy-2024, commercial production by beneficiary units must continue for at least:", options:["One year","Two years","Three years","Five years"], answer:2},
+
+{q:"The amended semiconductor policy follows the approval of a ₹3,700 crore semiconductor unit being established in Noida by:", options:["Tata Electronics and PSMC","HCL and Foxconn","Vedanta and Foxconn","Dixon Technologies and Intel"], answer:1},
+
+{q:"West Bengal is set to become which State/UT to implement Ayushman Bharat-Pradhan Mantri Jan Arogya Yojana (AB PM-JAY)?", options:["34th","35th","36th","37th"], answer:2},
+
+{q:"Under Ayushman Bharat PM-JAY, eligible families receive annual health coverage of up to:", options:["₹3 lakh","₹4 lakh","₹5 lakh","₹10 lakh"], answer:2},
+
+{q:"The implementing agency of Ayushman Bharat-Pradhan Mantri Jan Arogya Yojana (AB PM-JAY) is:", options:["National Health Mission","National Health Authority (NHA)","Ministry of Social Justice and Empowerment","Insurance Regulatory and Development Authority of India (IRDAI)"], answer:1},
+
+{q:"Ayushman Bharat PM-JAY, regarded as the world's largest government-funded health assurance scheme, was launched on:", options:["15 August 2018","2 October 2018","23 September 2018","26 January 2019"], answer:2},
+
+{q:"The Memorandum of Understanding for implementation of Ayushman Bharat PM-JAY in West Bengal is scheduled to be signed at:", options:["Rashtrapati Bhavan, New Delhi","Vigyan Bhawan, New Delhi","Bharat Mandapam, New Delhi","Nirman Bhawan, New Delhi"], answer:1},
+
+{q:"The Government of Kerala launched 'Ashwas-2026', a one-time settlement (OTS) scheme aimed at providing relief to borrowers who have defaulted on loans obtained from which institutions?", options:["Regional Rural Banks (RRBs)","Primary Agricultural Cooperative Societies (PACS)","Small Finance Banks (SFBs)","District Central Cooperative Banks (DCCBs)"], answer:1},
+
+{q:"'Ashwas-2026', introduced by the Kerala Government to address mounting NPAs in cooperative institutions, came into effect on:", options:["15 May 2026","1 June 2026","15 June 2026","1 July 2026"], answer:1},
+
+{q:"The validity period of Kerala's 'Ashwas-2026' One-Time Settlement Scheme extends up to:", options:["31 July 2026","15 August 2026","31 August 2026","30 September 2026"], answer:2},
+
+{q:"Which category of loans has been specifically excluded from coverage under Kerala's 'Ashwas-2026' scheme?", options:["Crop loans and KCC loans","Education loans and housing loans","Gold loans and deposit-backed loans","MSME loans and self-help group loans"], answer:2},
+
+{q:"Under the 'Ashwas-2026' scheme, borrowers with loans up to ₹50,000 overdue for more than five years are eligible for:", options:["Complete waiver of principal amount","25% interest waiver","50% interest waiver","75% interest waiver"], answer:2},
+
+{q:"Borrowers facing critical illnesses under Kerala's Ashwas-2026 scheme are entitled to an additional concession of up to:", options:["10%","15%","20%","25%"], answer:1},
+
+{q:"The Yamuna Riverfront Cleanliness Campaign 2026 launched by the Delhi Government is scheduled to commence from:", options:["5 June 2026","10 June 2026","14 June 2026","21 June 2026"], answer:2},
+
+{q:"The Yamuna Riverfront Cleanliness Campaign 2026 is being implemented under the leadership of which Chief Minister?", options:["Arvind Kejriwal","Atishi","Rekha Gupta","Parvesh Verma"], answer:2},
+
+{q:"During the previous 'Meri Yamuna, Mera Kartavya' campaign, more than how much waste was reportedly collected?", options:["8 tonnes","10 tonnes","12 tonnes","15 tonnes"], answer:2},
+
+{q:"The Yamuna River, targeted under the Delhi Government's cleanliness campaign, originates from:", options:["Gangotri Glacier","Yamunotri Glacier","Satopanth Glacier","Pindari Glacier"], answer:1},
+
+{q:"Under the PM Electric Drive Revolution in Innovative Vehicle Enhancement (PM E-DRIVE) Scheme, Delhi plans to induct how many low-floor electric buses?", options:["2,000","2,500","2,800","3,300"], answer:2},
+
+{q:"Of the 2,800 electric buses proposed under PM E-DRIVE, how many belong to the 9-metre category?", options:["1,000","1,200","1,400","1,600"], answer:2},
+
+{q:"Delhi currently operates approximately how many electric buses?", options:["3,500","4,300","5,000","6,200"], answer:1},
+
+{q:"The Delhi Government has set a target of operating how many electric buses by the end of 2026?", options:["6,000","7,000","7,500","8,500"], answer:2},
+
+{q:"The nodal ministry for the PM E-DRIVE Scheme is:", options:["Ministry of Road Transport and Highways","Ministry of New and Renewable Energy","Ministry of Heavy Industries","Ministry of Housing and Urban Affairs"], answer:2},
+
+{q:"Tamil Nadu has made Physical Education (PE) compulsory for students studying in which classes?", options:["Classes 1–10","Classes 6–10","Classes 6–12","Classes 9–12"], answer:2},
+
+{q:"The mandatory Physical Education policy in Tamil Nadu will be effective from:", options:["Academic Year 2025–26","Academic Year 2026–27","Academic Year 2027–28","Academic Year 2028–29"], answer:1},
+
+{q:"Monitoring of the implementation of Physical Education in Tamil Nadu schools will be undertaken by:", options:["District Education Officers","School Management Committees","District Physical Education Inspectors","Directorate of Sports Development Authority"], answer:2},
+
+{q:"The Memorandum of Agreement on 'Standard Framework for Paving and Greening of Urban Roads' was signed between the Government of Haryana and:", options:["CSIR-NAL","CSIR-CBRI","CSIR-Central Road Research Institute (CSIR-CRRI)","CSIR-NEERI"], answer:2},
+
+{q:"The urban road project in Haryana has been undertaken under the guidance of which body?", options:["National Green Tribunal","Commission for Air Quality Management (CAQM)","Central Pollution Control Board","Ministry of Environment, Forest and Climate Change"], answer:1},
+
+{q:"Which system has been proposed as part of the sustainable urban roads framework in Haryana for maintaining road infrastructure?", options:["Integrated Asset Monitoring System","National Highway Management Grid","Road Asset Management System (RAMS)","Smart Pavement Network System"], answer:2},
+
+{q:"The Council of Scientific and Industrial Research (CSIR) was established in:", options:["1940","1942","1947","1952"], answer:1},
+
+{q:"CSIR-Central Road Research Institute (CSIR-CRRI), which signed the MoA with Haryana, was established in:", options:["1948","1950","1952","1955"], answer:2},
+
+{q:"Gujarat has announced a dedicated Space Manufacturing Hub in collaboration with IN-SPACe near:", options:["Gandhinagar","Rajkot","GIDC Khoraj, Ahmedabad","Vadodara"], answer:2},
+
+{q:"The initial area earmarked for the proposed Space Manufacturing Hub in Gujarat is:", options:["25 acres","50 acres","75 acres","100 acres"], answer:1},
+
+{q:"The Common Technical Facility (CTF) proposed at Gujarat's Space Manufacturing Hub is expected to cost up to:", options:["₹50 crore","₹75 crore","₹100 crore","₹150 crore"], answer:2},
+
+{q:"Indian National Space Promotion and Authorization Centre (IN-SPACe) was established in:", options:["2018","2019","2020","2021"], answer:2},
+
+{q:"A tripartite MoU to establish a USD 3.3 billion Advanced Packaging Glass Core Substrate Manufacturing Facility was signed in Odisha between the state government, Intel Corporation and:", options:["Applied Materials","Tata Electronics","3D Glass Solutions (3DGS)","Foxconn Technology Group"], answer:2},
+
+{q:"The semiconductor packaging facility proposed in Odisha is expected to generate over how many direct high-skilled jobs?", options:["1,000","1,500","1,800","2,500"], answer:2},
+
+{q:"Intel Corporation, which partnered in Odisha's semiconductor project, was founded in:", options:["1965","1968","1971","1975"], answer:1},
+
+{q:"The Kerala Forest Department launched the HAWK (Hostile Activity Watch Kernel) e-Court Integration feature in collaboration with Wildlife Trust of India (WTI) and:", options:["Infosys Limited","IBM India","NTT Data","Tech Mahindra"], answer:2},
+
+{q:"HAWK has been integrated with which system through an API for direct online submission of offence-related documents to courts?", options:["e-Courts Mission Mode Project","District Court Management System (DCMS)","National Judicial Data Grid (NJDG)","Crime and Criminal Tracking Network System (CCTNS)"], answer:1},
+
+{q:"The Wildlife Trust of India (WTI), which collaborated in Kerala's HAWK initiative, was established in:", options:["1995","1998","2001","2005"], answer:1},
+
+{q:"The Government of Himachal Pradesh signed an MoU with which United Nations agency for climate-resilient and sustainable development?", options:["UNEP","UNICEF","UNDP","UNESCO"], answer:2},
+
+{q:"The MoU between Himachal Pradesh and UNDP was signed by Sushil Kumar Singla and:", options:["Achim Steiner","Angela Lusigi","António Guterres","Inger Andersen"], answer:1},
+
+{q:"The agreement between Himachal Pradesh and UNDP focuses on promoting all of the following except:", options:["Circular economy","Waste management","Social inclusion of waste workers","Offshore wind energy projects"], answer:3},
+
+{q:"Which additional scheme was launched by the Himachal Pradesh Government alongside the MoU with UNDP to empower informal waste management workers?", options:["Swachh Saathi Scheme","Safai Mitra Scheme","Harit Himachal Mission","Paryavaran Bandhu Scheme"], answer:1},
+
+{q:"United Nations Development Programme (UNDP) was established in:", options:["1948","1955","1965","1972"], answer:2},
+
+{q:"The headquarters of the United Nations Development Programme (UNDP) is located in:", options:["Geneva, Switzerland","Paris, France","Vienna, Austria","New York, USA"], answer:3},
+
+{q:"The Commission for Air Quality Management (CAQM), which provided guidance for Haryana's urban roads project, was established in:", options:["2019","2020","2021","2022"], answer:2},
+
+];
+
+// ===============================
+// VARIABLES
+// ===============================
+
+let userAnswers = new Array(questions.length).fill(null);
+
+let markedForReview = new Array(questions.length).fill(false);
+
+let submitted = false;
+
+// ===============================
+// LOAD QUIZ
+// ===============================
+
+function loadQuiz(){
+
+    const quizDiv = document.getElementById("quiz");
+
+    questions.forEach((question,index)=>{
+
+        const qDiv = document.createElement("div");
+
+        qDiv.classList.add("question");
+
+        qDiv.id = `question_${index}`;
+
+        qDiv.innerHTML = `
+        <h3>Q${index+1}. ${question.q}</h3>
+        `;
+
+        question.options.forEach((option,optIndex)=>{
+
+            const opt = document.createElement("div");
+
+            opt.classList.add("option");
+
+            opt.innerText = option;
+
+            opt.onclick = ()=>selectOption(index,optIndex,opt);
+
+            opt.id = `q${index}_opt${optIndex}`;
+
+            qDiv.appendChild(opt);
+
+        });
+
+        // MARK BUTTON
+
+        const markBtn = document.createElement("button");
+
+        markBtn.innerText = "Mark For Review";
+
+        markBtn.classList.add("mark-btn");
+
+        markBtn.onclick = ()=>toggleMark(index,markBtn);
+
+        qDiv.appendChild(markBtn);
+
+        // CLEAR BUTTON
+
+        const clearBtn = document.createElement("button");
+
+        clearBtn.innerText = "Clear";
+
+        clearBtn.classList.add("clear-btn");
+
+        clearBtn.onclick = ()=>clearAnswer(index);
+
+        qDiv.appendChild(clearBtn);
+
+        quizDiv.appendChild(qDiv);
+
+    });
+
+}
+
+// ===============================
+// SELECT OPTION
+// ===============================
+
+function selectOption(qIndex,optIndex,element){
+
+    if(submitted) return;
+
+    userAnswers[qIndex] = optIndex;
+
+    const options = document.querySelectorAll(`[id^="q${qIndex}_opt"]`);
+
+    options.forEach(opt=>{
+        opt.classList.remove("selected");
+    });
+
+    element.classList.add("selected");
+
+}
+
+// ===============================
+// MARK FOR REVIEW
+// ===============================
+
+function toggleMark(index,button){
+
+    markedForReview[index] = !markedForReview[index];
+
+    const questionBox = document.getElementById(`question_${index}`);
+
+    if(markedForReview[index]){
+
+        button.classList.add("marked");
+
+        button.innerText = "Marked For Review";
+
+        questionBox.classList.add("review-marked");
+
+    }else{
+
+        button.classList.remove("marked");
+
+        button.innerText = "Mark For Review";
+
+        questionBox.classList.remove("review-marked");
+
+    }
+
+}
+
+// ===============================
+// CLEAR ANSWER
+// ===============================
+
+function clearAnswer(index){
+
+    if(submitted) return;
+
+    userAnswers[index] = null;
+
+    const options = document.querySelectorAll(`[id^="q${index}_opt"]`);
+
+    options.forEach(opt=>{
+        opt.classList.remove("selected");
+    });
+
+}
+
+// ===============================
+// SUBMIT QUIZ
+// ===============================
+
+function submitQuiz(){
+
+    if(submitted) return;
+
+    submitted = true;
+
+    clearInterval(timer);
+
+    let score = 0;
+
+    let correctCount = 0;
+    let wrongCount = 0;
+    let unansweredCount = 0;
+
+    questions.forEach((question,index)=>{
+
+        const userAns = userAnswers[index];
+
+        if(userAns === null){
+
+            unansweredCount++;
+
+        }
+        else if(userAns === question.answer){
+
+            score += 1;
+            correctCount++;
+
+        }
+        else{
+
+            score -= 0.25;
+            wrongCount++;
+
+        }
+
+    });
+
+    let attempted = correctCount + wrongCount;
+
+    let accuracy = attempted > 0
+    ? ((correctCount/attempted)*100).toFixed(2)
+    : 0;
+
+    document.body.innerHTML = `
+
+    <div class="container">
+
+        <div class="result-box">
+
+            <h1>Quiz Submitted ✅</h1>
+
+            <h2>Total Score: ${score.toFixed(2)}</h2>
+
+            <h3>Correct Answers: ${correctCount}</h3>
+
+            <h3>Wrong Answers: ${wrongCount}</h3>
+
+            <h3>Unanswered Questions: ${unansweredCount}</h3>
+
+            <h3>Accuracy: ${accuracy}%</h3>
+
+            <button class="review-btn" onclick="reviewAnswers()">
+            Review Answers
+            </button>
+
+            <div id="reviewSection"></div>
+
+        </div>
+
+    </div>
+
+    `;
+
+}
+
+// ===============================
+// REVIEW ANSWERS
+// ===============================
+
+function reviewAnswers(){
+
+    const reviewSection = document.getElementById("reviewSection");
+
+    let html = `<h1 style="margin-top:40px;">Review Section</h1>`;
+
+    questions.forEach((question,index)=>{
+
+        const userAns = userAnswers[index];
+
+        let status = "";
+        let marks = "";
+
+        if(userAns === null){
+
+            status = `<span class="unanswered">Unanswered</span>`;
+            marks = `0 Marks`;
+
+        }
+        else if(userAns === question.answer){
+
+            status = `<span class="correct">Correct ✅</span>`;
+            marks = `+1 Mark`;
+
+        }
+        else{
+
+            status = `<span class="wrong">Wrong ❌</span>`;
+            marks = `-0.25 Mark`;
+
+        }
+
+        html += `
+
+        <div class="review-question">
+
+            <h3>Q${index+1}. ${question.q}</h3>
+
+            <p>${status}</p>
+
+            <p><b>Marks:</b> ${marks}</p>
+
+            <p>
+            <b>Your Answer:</b>
+            ${
+                userAns === null
+                ? "Not Attempted"
+                : question.options[userAns]
+            }
+            </p>
+
+            <div class="correct-answer">
+            <b>Correct Answer:</b>
+            ${question.options[question.answer]}
+            </div>
+
+        </div>
+
+        `;
+
+    });
+
+    reviewSection.innerHTML = html;
+
+}
+
+// ===============================
+// TIMER
+// ===============================
+
+let time = 1800;
+
+let timer;
+
+let isPaused = false;
+
+function startTimer(){
+
+    timer = setInterval(()=>{
+
+        if(!isPaused){
+
+            let minutes = Math.floor(time/60);
+
+            let seconds = time%60;
+
+            document.getElementById("timer").innerText =
+            `Time Left: ${minutes}:${seconds < 10 ? '0'+seconds : seconds}`;
+
+            time--;
+
+            if(time < 0){
+
+                clearInterval(timer);
+
+                alert("Time is up! Quiz auto-submitted.");
+
+                submitQuiz();
+
+            }
+
+        }
+
+    },1000);
+
+}
+
+// ===============================
+// PAUSE TIMER
+// ===============================
+
+function pauseTimer(){
+
+    if(submitted) return;
+
+    isPaused = true;
+
+    document.getElementById("pauseBtn").disabled = true;
+
+    document.getElementById("resumeBtn").disabled = false;
+
+    // Disable options
+    document.querySelectorAll(".option").forEach(opt=>{
+        opt.classList.add("disabled-option");
+    });
+
+    // Disable buttons
+    document.querySelectorAll(".mark-btn, .clear-btn").forEach(btn=>{
+        btn.disabled = true;
+        btn.classList.add("disabled-btn");
+    });
+
+}
+// ===============================
+// RESUME TIMER
+// ===============================
+
+function resumeTimer(){
+
+    if(submitted) return;
+
+    isPaused = false;
+
+    document.getElementById("pauseBtn").disabled = false;
+
+    document.getElementById("resumeBtn").disabled = true;
+
+    // Enable options
+    document.querySelectorAll(".option").forEach(opt=>{
+        opt.classList.remove("disabled-option");
+    });
+
+    // Enable buttons
+    document.querySelectorAll(".mark-btn, .clear-btn").forEach(btn=>{
+        btn.disabled = false;
+        btn.classList.remove("disabled-btn");
+    });
+
+}
+// ===============================
+
+loadQuiz();
+
+startTimer();
+
+</script>
+
+</body>
+</html>
